@@ -113,8 +113,8 @@ def _init_debug_filters_from_env():
     PK_DEBUG_FILES : Comma-separated list of file names to debug
         Example: PK_DEBUG_FILES="AssetsManager.py,KiteTokenWatcher.py"
     
-    PK_DEBUG_ENABLED : Set to '1', 'true', 'yes', or 'on' to disable selective filtering
-        Example: PK_DEBUG_ENABLED=1
+    PK_DEBUG_ALL : Set to '1', 'true', 'yes', or 'on' to disable selective filtering
+        Example: PK_DEBUG_ALL=1
     
     PK_LOG_LEVEL : Override the default log level (0-50)
         Example: PK_LOG_LEVEL=10  # DEBUG level
@@ -146,7 +146,7 @@ def _init_debug_filters_from_env():
     $ python your_script.py
     
     # Enable all debug (disables selective filtering)
-    $ export PK_DEBUG_ENABLED=1
+    $ export PK_DEBUG_ALL=1
     $ python your_script.py
     
     # Combine environment variables with code-based filters
@@ -156,13 +156,13 @@ def _init_debug_filters_from_env():
     global _debug_filters, _selective_debug
     
     # Check if we should enable all debug (disable selective mode)
-    debug_all = os.environ.get("PK_DEBUG_ENABLED", "").lower()
+    debug_all = os.environ.get("PK_DEBUG_ALL", "").lower()
     if debug_all in ('1', 'true', 'yes', 'on'):
         _selective_debug = False
         # Try to log, but logger might not be initialized yet
         try:
             logger = default_logger()
-            logger.info("Debug all enabled via PK_DEBUG_ENABLED environment variable")
+            logger.info("Debug all enabled via PK_DEBUG_ALL environment variable")
         except:
             pass
         return
