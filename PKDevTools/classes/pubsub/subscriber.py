@@ -187,18 +187,22 @@ class PKNotificationService(SingletonMixin, metaclass=SingletonType):
                         result = debug_response.json()
                         if result.get('validationMessages'):
                             for msg in result['validationMessages']:
-                                default_logger().warning(f"GA4 Validation: {msg.get('description', msg)}")
+                                if "subscriber.py" in os.environ.get("PK_DEBUG_FILES",""):
+                                    default_logger().warning(f"GA4 Validation: {msg.get('description', msg)}")
                         else:
                             # No validation errors, send to real endpoint
                             GA_ENDPOINT = f"https://www.google-analytics.com/mp/collect?measurement_id={MEASUREMENT_ID}&api_secret={API_SECRET}"
                             requests.post(GA_ENDPOINT, json=payload, timeout=5)
                     if debug_response.status_code in [200, 204]:
-                        default_logger().debug(f"GA4 Event '{event_name}' sent successfully")
+                        if "subscriber.py" in os.environ.get("PK_DEBUG_FILES",""):
+                            default_logger().debug(f"GA4 Event '{event_name}' sent successfully")
                     else:
-                        default_logger().warning(f"GA4 Error: {debug_response.status_code} - {debug_response.text}")
+                        if "subscriber.py" in os.environ.get("PK_DEBUG_FILES",""):
+                            default_logger().warning(f"GA4 Error: {debug_response.status_code} - {debug_response.text}")
                         
                 except Exception as e:
-                    default_logger().debug(f"Failed to send GA4 event: {e}")
+                    if "subscriber.py" in os.environ.get("PK_DEBUG_FILES",""):
+                        default_logger().debug(f"Failed to send GA4 event: {e}")
             
             threading.Thread(target=send, daemon=True).start()
         else:
@@ -247,7 +251,8 @@ class PKNotificationService(SingletonMixin, metaclass=SingletonType):
                         parse_type="HTML",
                     )
             except Exception as e:
-                default_logger().error(f"Error encountered in notification service: {e}")
+                if "subscriber.py" in os.environ.get("PK_DEBUG_FILES",""):
+                    default_logger().error(f"Error encountered in notification service: {e}")
                 send_message(
                     message=f"Error encountered:\n{e}",
                     userID=DEV_CHANNEL_ID,
