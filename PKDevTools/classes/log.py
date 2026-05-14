@@ -90,7 +90,7 @@ _debug_filters = {
 
 # Global debug mode flag - when True, only filtered components show debug logs
 _selective_debug = True
-
+_logger_name = "pkscreener"
 
 def _init_debug_filters_from_env():
     """
@@ -576,7 +576,7 @@ class filterlogger:
                 _module_loggers[module_name]._initialized = False
             return _module_loggers[module_name]
 
-    def __init__(self, module_name="PKDevTools"):
+    def __init__(self, module_name="pkscreener"):
         """
         Initialize the logger for the specified module.
 
@@ -629,7 +629,7 @@ class filterlogger:
                 self.logger.setLevel(level)
 
     @staticmethod
-    def getlogger(module_name="PKDevTools"):
+    def getlogger(module_name="pkscreener"):
         """
         Factory method to get appropriate logger instance.
 
@@ -1056,7 +1056,7 @@ def setup_custom_logger(
         ...     trace_file_path="/var/log/myapp/trace.log"
         ... )
     """
-    global __trace__, __filter__, _selective_debug
+    global __trace__, __filter__, _selective_debug, _logger_name
 
     # Check environment variables for overrides
     env_trace = os.environ.get("PK_TRACE_ENABLED", "")
@@ -1077,7 +1077,7 @@ def setup_custom_logger(
 
     # Main application logger
     logger = filterlogger.getlogger(name)
-
+    _logger_name = name
     # Set the log level from environment variable
     try:
         # First check for PK_LOG_LEVEL override
@@ -1125,6 +1125,19 @@ def setup_custom_logger(
 
     return logger
 
+def tryAddHandlers(logger):
+    global _logger_name
+    if not _logger_name or len(_logger_name) == 0:
+        return
+    if logger and logger.logger and logger.logger.name and logger.logger.name == _logger_name:
+        return
+    try:
+        prev_logger = filterlogger.getlogger(_logger_name)
+        if prev_logger and prev_logger.logger and prev_logger.logger.handlers:
+            for h in prev_logger.logger.handlers:
+                logger.logger.addHandler(h)
+    except:
+        pass
 
 def default_logger():
     """
@@ -1136,6 +1149,7 @@ def default_logger():
     Returns:
         filterlogger instance if logging enabled, otherwise emptylogger
     """
+    global _logger_name
     if "PKDevTools_Default_Log_Level" not in os.environ.keys():
         return emptylogger()
     
@@ -1223,7 +1237,10 @@ def default_logger():
                 
                 # Final check: ensure we don't have an empty or invalid module name
                 if module_name and module_name not in ['', 'PKDevTools', 'logging', '__main__']:
-                    return filterlogger.getlogger(module_name)
+                    logger = filterlogger.getlogger(_logger_name)
+                    tryAddHandlers(logger)
+                    return logger
+
         
         # If we couldn't find a good frame, use the caller's direct frame
         # but still try to skip debugger frames
@@ -1238,14 +1255,20 @@ def default_logger():
                         parts = module_name.split('.')
                         if len(parts) > 3:
                             module_name = '.'.join(parts[:3])
-                        return filterlogger.getlogger(module_name)
+                        logger = filterlogger.getlogger(_logger_name)
+                        tryAddHandlers(logger)
+                        return logger
                     elif module_name not in ['PKDevTools', 'logging']:
-                        return filterlogger.getlogger(module_name)
+                        logger = filterlogger.getlogger(_logger_name)
+                        tryAddHandlers(logger)
+                        return logger
         
     except Exception as e:
         pass  # Fallback to PKDevTools
     
-    return filterlogger.getlogger("PKDevTools")
+    logger = filterlogger.getlogger(_logger_name)
+    tryAddHandlers(logger)
+    return logger
 
 
 def file_logger():
@@ -1255,8 +1278,11 @@ def file_logger():
     Returns:
         filterlogger instance if logging enabled, otherwise emptylogger
     """
+    global _logger_name
     if "PKDevTools_Default_Log_Level" in os.environ.keys():
-        return filterlogger.getlogger("PKDevTools_file_logger")
+        logger = filterlogger.getlogger(_logger_name)
+        tryAddHandlers(logger)
+        return logger
     else:
         return emptylogger()
 
