@@ -305,7 +305,8 @@ class DebugConfigManager:
         
         # Main debug section
         if config_parser.has_section('debug'):
-            result['enabled'] = config_parser.getboolean('debug', 'enabled', fallback=True)
+            result['enabled'] = config_parser.getboolean('debug', 'enabled', fallback=False)
+            result['debug_all'] = config_parser.getboolean('debug', 'debug_all', fallback=False)
             result['selective_debug'] = config_parser.getboolean('debug', 'selective_debug', fallback=True)
             result['watch_for_changes'] = config_parser.getboolean('debug', 'watch_for_changes', fallback=False)
             result['watch_interval'] = config_parser.getint('debug', 'watch_interval', fallback=5)
