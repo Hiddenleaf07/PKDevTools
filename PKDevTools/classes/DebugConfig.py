@@ -340,8 +340,8 @@ class DebugConfigManager:
         config = DebugConfig()
         
         # Basic settings
-        config.enabled = data.get('enabled', True) or (True if int(os.environ.get("PKDevTools_Default_Log_Level",0)) == logging.DEBUG else False)
-        config.debug_all = data.get('debug_all', True)
+        config.enabled = data.get('enabled', False) or (True if int(os.environ.get("PKDevTools_Default_Log_Level",0)) == logging.DEBUG else False)
+        config.debug_all = data.get('debug_all', False)
         config.selective_debug = data.get('selective_debug', True)
         config.watch_for_changes = data.get('watch_for_changes', False)
         config.watch_interval = data.get('watch_interval', 5)
