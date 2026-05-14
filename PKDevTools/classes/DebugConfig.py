@@ -145,6 +145,7 @@ class DebugConfig:
         config_file: Path to the configuration file (if loaded from file)
     """
     enabled: bool = True
+    debug_all: bool = True
     selective_debug: bool = True
     filters: DebugFilters = field(default_factory=DebugFilters)
     watch_for_changes: bool = False
@@ -367,11 +368,16 @@ class DebugConfigManager:
             PK_DEBUG_CLASSES: Comma-separated list of classes
             PK_DEBUG_FUNCTIONS: Comma-separated list of functions
             PK_DEBUG_FILES: Comma-separated list of files
+            PK_DEBUG_ALL: Debug all.
         """
         # Boolean overrides
         env_enabled = os.environ.get('PK_DEBUG_ENABLED')
         if env_enabled is not None:
             config.enabled = env_enabled.lower() in ('true', '1', 'yes')
+        
+        all_enabled = os.environ.get('PK_DEBUG_ALL')
+        if all_enabled is not None:
+            config.debug_all = all_enabled.lower() in ('true', '1', 'yes')
         
         env_selective = os.environ.get('PK_DEBUG_SELECTIVE')
         if env_selective is not None:
@@ -397,6 +403,9 @@ class DebugConfigManager:
         env_files = os.environ.get('PK_DEBUG_FILES')
         if env_files:
             config.filters.files.update(f.strip() for f in env_files.split(',') if f.strip())
+        if config.debug_all:
+            config.enabled = True
+            config.selective_debug = False
     
     def start_watching(self, interval: Optional[int] = None):
         """
