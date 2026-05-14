@@ -98,92 +98,92 @@ def _init_debug_filters_from_env():
     
     Environment Variables:
     -----------------------
-    PKDEVTOOLS_DEBUG_PACKAGES : Comma-separated list of package names to debug
-        Example: PKDEVTOOLS_DEBUG_PACKAGES="PKBrokers,PKScreener"
+    PK_DEBUG_PACKAGES : Comma-separated list of package names to debug
+        Example: PK_DEBUG_PACKAGES="PKBrokers,PKScreener"
     
-    PKDEVTOOLS_DEBUG_MODULES : Comma-separated list of module names to debug
-        Example: PKDEVTOOLS_DEBUG_MODULES="PKScreener.classes.AssetsManager,PKBrokers.bot.tickbot"
+    PK_DEBUG_MODULES : Comma-separated list of module names to debug
+        Example: PK_DEBUG_MODULES="PKScreener.classes.AssetsManager,PKBrokers.bot.tickbot"
     
-    PKDEVTOOLS_DEBUG_CLASSES : Comma-separated list of class names to debug
-        Example: PKDEVTOOLS_DEBUG_CLASSES="KiteTokenWatcher,InMemoryCandleStore"
+    PK_DEBUG_CLASSES : Comma-separated list of class names to debug
+        Example: PK_DEBUG_CLASSES="KiteTokenWatcher,InMemoryCandleStore"
     
-    PKDEVTOOLS_DEBUG_FUNCTIONS : Comma-separated list of function names to debug
-        Example: PKDEVTOOLS_DEBUG_FUNCTIONS="process_tick,export_daily_candles,loadStockData"
+    PK_DEBUG_FUNCTIONS : Comma-separated list of function names to debug
+        Example: PK_DEBUG_FUNCTIONS="process_tick,export_daily_candles,loadStockData"
     
-    PKDEVTOOLS_DEBUG_FILES : Comma-separated list of file names to debug
-        Example: PKDEVTOOLS_DEBUG_FILES="AssetsManager.py,KiteTokenWatcher.py"
+    PK_DEBUG_FILES : Comma-separated list of file names to debug
+        Example: PK_DEBUG_FILES="AssetsManager.py,KiteTokenWatcher.py"
     
-    PKDEVTOOLS_DEBUG_ALL : Set to '1', 'true', 'yes', or 'on' to disable selective filtering
-        Example: PKDEVTOOLS_DEBUG_ALL=1
+    PK_DEBUG_ENABLED : Set to '1', 'true', 'yes', or 'on' to disable selective filtering
+        Example: PK_DEBUG_ENABLED=1
     
-    PKDEVTOOLS_LOG_LEVEL : Override the default log level (0-50)
-        Example: PKDEVTOOLS_LOG_LEVEL=10  # DEBUG level
+    PK_LOG_LEVEL : Override the default log level (0-50)
+        Example: PK_LOG_LEVEL=10  # DEBUG level
     
-    PKDEVTOOLS_TRACE_ENABLED : Set to '1', 'true', 'yes', or 'on' to enable tracing
-        Example: PKDEVTOOLS_TRACE_ENABLED=1
+    PK_TRACE_ENABLED : Set to '1', 'true', 'yes', or 'on' to enable tracing
+        Example: PK_TRACE_ENABLED=1
     
-    PKDEVTOOLS_SELECTIVE_DEBUG : Set to '0', 'false', 'no', or 'off' to disable selective debug
-        Example: PKDEVTOOLS_SELECTIVE_DEBUG=0
+    PK_DEBUG_SELECTIVE : Set to '0', 'false', 'no', or 'off' to disable selective debug
+        Example: PK_DEBUG_SELECTIVE=0
     
     Usage Examples:
     ----------------
     # Debug only PKBrokers package
-    $ export PKDEVTOOLS_DEBUG_PACKAGES="PKBrokers"
+    $ export PK_DEBUG_PACKAGES="PKBrokers"
     $ python your_script.py
     
     # Debug specific module and class
-    $ export PKDEVTOOLS_DEBUG_MODULES="PKScreener.classes.AssetsManager"
-    $ export PKDEVTOOLS_DEBUG_CLASSES="KiteTokenWatcher"
+    $ export PK_DEBUG_MODULES="PKScreener.classes.AssetsManager"
+    $ export PK_DEBUG_CLASSES="KiteTokenWatcher"
     $ python your_script.py
     
     # Debug multiple items
-    $ export PKDEVTOOLS_DEBUG_PACKAGES="PKBrokers,PKScreener"
-    $ export PKDEVTOOLS_DEBUG_FUNCTIONS="process_tick,export_daily_candles"
+    $ export PK_DEBUG_PACKAGES="PKBrokers,PKScreener"
+    $ export PK_DEBUG_FUNCTIONS="process_tick,export_daily_candles"
     $ python your_script.py
     
     # Debug specific file
-    $ export PKDEVTOOLS_DEBUG_FILES="AssetsManager.py,KiteTokenWatcher.py"
+    $ export PK_DEBUG_FILES="AssetsManager.py,KiteTokenWatcher.py"
     $ python your_script.py
     
     # Enable all debug (disables selective filtering)
-    $ export PKDEVTOOLS_DEBUG_ALL=1
+    $ export PK_DEBUG_ENABLED=1
     $ python your_script.py
     
     # Combine environment variables with code-based filters
-    $ export PKDEVTOOLS_DEBUG_PACKAGES="PKScreener"
+    $ export PK_DEBUG_PACKAGES="PKScreener"
     $ python -c "from PKDevTools.classes.log import enable_debug_for; enable_debug_for('function', 'my_function')"
     """
     global _debug_filters, _selective_debug
     
     # Check if we should enable all debug (disable selective mode)
-    debug_all = os.environ.get("PKDEVTOOLS_DEBUG_ALL", "").lower()
+    debug_all = os.environ.get("PK_DEBUG_ENABLED", "").lower()
     if debug_all in ('1', 'true', 'yes', 'on'):
         _selective_debug = False
         # Try to log, but logger might not be initialized yet
         try:
             logger = default_logger()
-            logger.info("Debug all enabled via PKDEVTOOLS_DEBUG_ALL environment variable")
+            logger.info("Debug all enabled via PK_DEBUG_ENABLED environment variable")
         except:
             pass
         return
     
     # Check if selective debug should be disabled
-    selective_debug_env = os.environ.get("PKDEVTOOLS_SELECTIVE_DEBUG", "")
+    selective_debug_env = os.environ.get("PK_DEBUG_SELECTIVE", "")
     if selective_debug_env.lower() in ('0', 'false', 'no', 'off'):
         _selective_debug = False
         try:
             logger = default_logger()
-            logger.info("Selective debug disabled via PKDEVTOOLS_SELECTIVE_DEBUG environment variable")
+            logger.info("Selective debug disabled via PK_DEBUG_SELECTIVE environment variable")
         except:
             pass
     
     # Parse each environment variable and add to filters
     env_mappings = {
-        'PKDEVTOOLS_DEBUG_PACKAGES': 'packages',
-        'PKDEVTOOLS_DEBUG_MODULES': 'modules', 
-        'PKDEVTOOLS_DEBUG_CLASSES': 'classes',
-        'PKDEVTOOLS_DEBUG_FUNCTIONS': 'functions',
-        'PKDEVTOOLS_DEBUG_FILES': 'files',
+        'PK_DEBUG_PACKAGES': 'packages',
+        'PK_DEBUG_MODULES': 'modules', 
+        'PK_DEBUG_CLASSES': 'classes',
+        'PK_DEBUG_FUNCTIONS': 'functions',
+        'PK_DEBUG_FILES': 'files',
     }
     
     for env_var, filter_type in env_mappings.items():
@@ -997,12 +997,12 @@ def setup_custom_logger(
     Set up and configure a custom logger instance with optional tracing and selective debug.
 
     Environment variables override:
-        PKDEVTOOLS_LOG_LEVEL: Override log level (0-50)
-            Example: PKDEVTOOLS_LOG_LEVEL=10  # DEBUG level
-        PKDEVTOOLS_TRACE_ENABLED: Set to '1' to enable tracing
-            Example: PKDEVTOOLS_TRACE_ENABLED=1
-        PKDEVTOOLS_SELECTIVE_DEBUG: Set to '0' to disable selective debug
-            Example: PKDEVTOOLS_SELECTIVE_DEBUG=0
+        PK_LOG_LEVEL: Override log level (0-50)
+            Example: PK_LOG_LEVEL=10  # DEBUG level
+        PK_TRACE_ENABLED: Set to '1' to enable tracing
+            Example: PK_TRACE_ENABLED=1
+        PK_DEBUG_SELECTIVE: Set to '0' to disable selective debug
+            Example: PK_DEBUG_SELECTIVE=0
 
     Args:
         name: Name of the logger
@@ -1024,8 +1024,8 @@ def setup_custom_logger(
         >>> enable_debug_for('function', 'process_tick')
 
         # With environment variables
-        $ export PKDEVTOOLS_DEBUG_MODULES="PKBrokers.bot.tickbot"
-        $ export PKDEVTOOLS_LOG_LEVEL=10
+        $ export PK_DEBUG_MODULES="PKBrokers.bot.tickbot"
+        $ export PK_LOG_LEVEL=10
         $ python your_script.py
 
         # Basic tracing:
@@ -1059,11 +1059,11 @@ def setup_custom_logger(
     global __trace__, __filter__, _selective_debug
 
     # Check environment variables for overrides
-    env_trace = os.environ.get("PKDEVTOOLS_TRACE_ENABLED", "")
+    env_trace = os.environ.get("PK_TRACE_ENABLED", "")
     if env_trace.lower() in ('1', 'true', 'yes', 'on'):
         trace = True
     
-    env_selective = os.environ.get("PKDEVTOOLS_SELECTIVE_DEBUG", "")
+    env_selective = os.environ.get("PK_DEBUG_SELECTIVE", "")
     if env_selective.lower() in ('0', 'false', 'no', 'off'):
         selective_debug = False
     
@@ -1080,8 +1080,8 @@ def setup_custom_logger(
 
     # Set the log level from environment variable
     try:
-        # First check for PKDEVTOOLS_LOG_LEVEL override
-        env_level = os.environ.get("PKDEVTOOLS_LOG_LEVEL")
+        # First check for PK_LOG_LEVEL override
+        env_level = os.environ.get("PK_LOG_LEVEL")
         if env_level is not None:
             level = int(env_level)
         else:
